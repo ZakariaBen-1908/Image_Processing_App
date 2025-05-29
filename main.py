@@ -108,7 +108,7 @@ def main():
     st.set_page_config(page_title="Image Processing App", layout="wide")
     st.title("🧠 Image Processing Toolkit")
     menu = st.sidebar.selectbox("Choose a Task", [
-        "Image Acquisition", "Pre-Processing", "Enhancement", "Segmentation", "Feature Extraction"
+        "Image Acquisition", "Pre-Processing", "Segmentation", "Feature Extraction"
     ])
 
     ensure_directories()
@@ -116,6 +116,7 @@ def main():
         image_acquisition()
     elif menu == "Pre-Processing":
         Pre_Processing()
+    elif menu == "Segmentation":
         segmentation()
 
 if __name__ == "__main__":
