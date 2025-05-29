@@ -117,9 +117,9 @@ def feature_extraction():
         elif option == "Standard Deviation":
             st.write(f"Standard deviation: {Features.Std_deviation(img)}")
         elif option == "Text Extractor":
-            text = Features.extract_text(img)
-            for _, value in text:
-                st.write(value)
+            extracted_text = Features.extract_text(img)
+            st.text_area("Extracted Text", extracted_text, height=300)
+
 
 def main():
     st.set_page_config(page_title="Image Processing App", layout="wide")

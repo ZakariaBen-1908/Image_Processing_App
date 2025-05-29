@@ -26,18 +26,35 @@ def Std_deviation(img: np.ndarray) -> float:
     """
     return np.std(img)
 
-def extract_text(img: np.ndarray, lang_list=['en'], use_gpu=False) -> list:
-    """
-    Extract text from an image using EasyOCR.
-    
-    Args:
-        img (np.ndarray): Input image.
-        lang_list (list): List of language codes (default is ['en']).
-        use_gpu (bool): Whether to use GPU (default is False).
-    
-    Returns:
-        list: List of tuples (bounding_box, text, confidence).
-    """
-    reader = easyocr.Reader(lang_list, gpu=use_gpu)
-    results = reader.readtext(img)
-    return results
+def extract_text(image):
+    reader = easyocr.Reader(['en'], gpu=True)
+    results = reader.readtext(image)
+
+    # Defensive check: ensure results are in expected format
+    if not results or not all(len(item) == 3 for item in results):
+        return "Text extraction failed or returned unexpected format."
+
+    # Sort by Y (vertical), then X (horizontal)
+    results.sort(key=lambda x: (x[0][0][1], x[0][0][0]))
+
+    lines = []
+    current_line = []
+    last_y = None
+
+    for (bbox, text, confidence) in results:
+        y = bbox[0][1]  # Top-left Y coordinate
+
+        if last_y is None:
+            last_y = y
+
+        if abs(y - last_y) > 15:  # New line if vertical distance > threshold
+            lines.append(" ".join(current_line))
+            current_line = [text]
+            last_y = y
+        else:
+            current_line.append(text)
+
+    if current_line:
+        lines.append(" ".join(current_line))
+
+    return "\n".join(lines)
