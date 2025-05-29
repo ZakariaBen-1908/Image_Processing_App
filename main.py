@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 import processing
 import Segmentation
+import Features
 
 IMAGE_DIR = "images"
 OUTPUT_DIR = "Output_Images"
@@ -104,6 +105,22 @@ def segmentation():
         st.image(out, use_column_width=True)
         create_download_button(out, f"{option.lower().replace(' ', '_')}.jpg", "Download")
 
+def feature_extraction():
+    st.subheader("Feature Extraction")
+    saved_images = get_saved_images()
+    img = load_selected_image(saved_images)
+    if img is not None:
+        show_image(img, "Original Image")
+        option = st.radio("Feature Method", ["Mean", "Standard Deviation", "Text Extractor"])
+        if option == "Mean":
+            st.write(f"Mean pixel value: {Features.Mean(img)}")
+        elif option == "Standard Deviation":
+            st.write(f"Standard deviation: {Features.Std_deviation(img)}")
+        elif option == "Text Extractor":
+            text = Features.extract_text(img)
+            for _, value in text:
+                st.write(value)
+
 def main():
     st.set_page_config(page_title="Image Processing App", layout="wide")
     st.title("🧠 Image Processing Toolkit")
@@ -118,6 +135,8 @@ def main():
         Pre_Processing()
     elif menu == "Segmentation":
         segmentation()
+    elif menu == "Feature Extraction":
+        feature_extraction()
 
 if __name__ == "__main__":
     main()
