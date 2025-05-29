@@ -75,12 +75,6 @@ def Pre_Processing():
             out = processing.Gaussian_Filter(img)
         elif option == "Resize":
             out = processing.Resize_Image(img)
-        elif option == "Canny_edge_detection":
-            out = processing.Canny_edge_detection(img)
-        elif option == "Thresholding":
-            out = processing.Thresholding(img)
-        elif option == "Adaptive_Thresholding":
-            out = processing.Adaptive_Thresholding(img)
         elif option == "Histogram_Equalization":
             out = processing.Histogram_Equalization(img)
         elif option == "Sharpening":
@@ -94,13 +88,19 @@ def segmentation():
     img = load_selected_image(saved_images, key="segmentation_image")
     if img is not None:
         show_image(img, "Original Image")
-        option = st.radio("Segmentation Method", ["Threshold", "Sobel Filter", "Canny Filter"])
+        option = st.radio("Segmentation Method", ["Threshold", "Adaptive_Threshold", "Sobel Filter", "Canny Filter", "Watershed_Segmentation", "Kmeans_Segmentation"])
         if option == "Threshold":
             out = Segmentation.Thresholding(img)
+        elif option == "Adaptive_Threshold":
+            out = Segmentation.Adaptive_Thresholding(img)
         elif option == "Sobel Filter":
             out = Segmentation.Sobel(img)
         elif option == "Canny Filter":
             out = Segmentation.Canny(img)
+        if option == "Watershed_Segmentation":
+            out = Segmentation.Watershed_Segmentation(img)
+        if option == "Kmeans_Segmentation":
+            out = Segmentation.Kmeans_Segmentation(img)
         st.image(out, use_column_width=True)
         create_download_button(out, f"{option.lower().replace(' ', '_')}.jpg", "Download")
 

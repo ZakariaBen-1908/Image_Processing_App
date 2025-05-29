@@ -24,30 +24,6 @@ def Resize_Image(img):
     resized = cv2.resize(img, (width, height))
     return cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
 
-def Canny_edge_detection(img):
-    """Apply Canny edge detection."""
-    threshold1 = st.slider("Canny Threshold 1", 50, 300, 100)
-    threshold2 = st.slider("Canny Threshold 2", 50, 300, 200)
-    grey = Con_to_grey(img)
-    edges = cv2.Canny(grey, threshold1, threshold2)
-    return edges
-
-def Thresholding(img):
-    """Apply binary thresholding."""
-    grey = Con_to_grey(img)
-    thresh_val = st.slider("Threshold Value", 0, 255, 127)
-    _, thresh = cv2.threshold(grey, thresh_val, 255, cv2.THRESH_BINARY)
-    return thresh
-
-def Adaptive_Thresholding(img):
-    """Apply adaptive thresholding."""
-    grey = Con_to_grey(img)
-    block_size = st.slider("Block Size (odd number)", 3, 51, 11, step=2)
-    c_value = st.slider("C (constant subtracted)", 0, 20, 2)
-    adaptive = cv2.adaptiveThreshold(grey, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                     cv2.THRESH_BINARY, block_size, c_value)
-    return adaptive
-
 def Histogram_Equalization(img):
     """Apply histogram equalization (greyCon_to_grey only)."""
     grey = Con_to_grey(img)
