@@ -31,8 +31,8 @@ def create_download_button(image, filename, label):
     with open(filepath, "rb") as f:
         st.download_button(label=label, data=f, file_name=filename, mime="image/jpeg")
 
-def load_selected_image(saved_images):
-    selected_image = st.selectbox("Choose an image", saved_images)
+def load_selected_image(saved_images, key=None):
+    selected_image = st.selectbox("Choose an image", saved_images, key=key)
     if selected_image:
         image_path = os.path.join(IMAGE_DIR, selected_image)
         img = cv2.imread(image_path)
@@ -59,10 +59,14 @@ def image_acquisition():
 def Pre_Processing():
     st.subheader("processing")
     saved_images = get_saved_images()
-    img = load_selected_image(saved_images)
+    img = load_selected_image(saved_images, key="preprocessing_image")
     if img is not None:
         show_image(img, "Original Image")
-        option = st.radio("Choose technique", ["Convert to GreyScale", "Median Filtering", "Gaussian Filtering", "Resize", "Canny_edge_detection", "Thresholding"," Adaptive_Thresholding", "Histogram_Equalization", "Sharpening"])
+        option = st.radio("Choose technique", [
+            "Convert to GreyScale", "Median Filtering", "Gaussian Filtering",
+            "Resize", "Canny_edge_detection", "Thresholding",
+            "Adaptive_Thresholding", "Histogram_Equalization", "Sharpening"
+        ])
         if option == "Convert to GreyScale":
             out = processing.Con_to_grey(img)
         elif option == "Median Filtering":
@@ -87,7 +91,7 @@ def Pre_Processing():
 def segmentation():
     st.subheader("Segmentation")
     saved_images = get_saved_images()
-    img = load_selected_image(saved_images)
+    img = load_selected_image(saved_images, key="segmentation_image")
     if img is not None:
         show_image(img, "Original Image")
         option = st.radio("Segmentation Method", ["Threshold", "Sobel Filter", "Canny Filter"])
@@ -111,7 +115,7 @@ def main():
     if menu == "Image Acquisition":
         image_acquisition()
     elif menu == "Pre-Processing":
-        processing()
+        Pre_Processing()
         segmentation()
 
 if __name__ == "__main__":
