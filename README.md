@@ -1,6 +1,6 @@
 # Image_Processing_App
 
-![App screenshot](Image_processing_app.png)
+![App screenshot](images/App.png)
 
 # 🚀 How to Run This Project
 
