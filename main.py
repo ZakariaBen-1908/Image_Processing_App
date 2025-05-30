@@ -26,9 +26,14 @@ def save_image(img):
     cv2.imwrite(image_path, img)
     return image_path
 
-def create_download_button(image, filename, label):
+def create_download_button(image, filename, label, original_shape=None):
+    # Resize to original shape if needed
+    if original_shape is not None and image.shape[:2] != original_shape[:2]:
+        image = cv2.resize(image, (original_shape[1], original_shape[0]), interpolation=cv2.INTER_AREA)
+
     filepath = os.path.join(OUTPUT_DIR, filename)
     Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)).save(filepath)
+
     with open(filepath, "rb") as f:
         st.download_button(label=label, data=f, file_name=filename, mime="image/jpeg")
 
@@ -41,8 +46,10 @@ def load_selected_image(saved_images, key=None):
     return None
 
 def show_image(img, caption=None):
-    img_disp = cv2.resize(img, (340, 180))
-    st.image(img_disp, channels='BGR', caption=caption, use_column_width=True)
+    width = st.sidebar.slider("Image width", 100, 1000, 400)
+    height = st.sidebar.slider("Image height", 100, 1000, 300)
+    resized = cv2.resize(img, (width, height))
+    st.image(resized, channels='BGR', caption=caption)
 
 def image_acquisition():
     st.subheader("Upload an Image")
@@ -58,16 +65,17 @@ def image_acquisition():
         st.info("Upload an image to start.")
 
 def Pre_Processing():
-    st.subheader("processing")
+    st.subheader("Processing")
     saved_images = get_saved_images()
     img = load_selected_image(saved_images, key="preprocessing_image")
+
     if img is not None:
-        show_image(img, "Original Image")
-        option = st.radio("Choose technique", [
+        option = st.selectbox("Choose technique", [
             "Convert to GreyScale", "Median Filtering", "Gaussian Filtering",
             "Resize", "Canny_edge_detection", "Thresholding",
             "Adaptive_Thresholding", "Histogram_Equalization", "Sharpening"
         ])
+        
         if option == "Convert to GreyScale":
             out = processing.Con_to_grey(img)
         elif option == "Median Filtering":
@@ -76,20 +84,45 @@ def Pre_Processing():
             out = processing.Gaussian_Filter(img)
         elif option == "Resize":
             out = processing.Resize_Image(img)
+        elif option == "Canny_edge_detection":
+            out = processing.Canny_edge_detection(img)
+        elif option == "Thresholding":
+            out = processing.Thresholding(img)
+        elif option == "Adaptive_Thresholding":
+            out = processing.Adaptive_Thresholding(img)
         elif option == "Histogram_Equalization":
             out = processing.Histogram_Equalization(img)
         elif option == "Sharpening":
             out = processing.Sharpening(img)
-        st.image(out, use_column_width=True)
-        create_download_button(out, f"{option.lower().replace(' ', '_')}.jpg", "Download")
+
+        # Resize output image to match input image
+        if out.shape[:2] != img.shape[:2]:
+            out = cv2.resize(out, (img.shape[1], img.shape[0]))
+
+        # Display side-by-side
+        col1, col2 = st.columns(2)
+        with col1:
+            st.image(img, channels='BGR', caption="Original Image")
+        with col2:
+            if len(out.shape) == 3:
+                st.image(out, channels='BGR', caption=f"Processed: {option}")
+            else:
+                st.image(out, caption=f"Processed: {option}")
+
+        # Download button
+        create_download_button(out, f"{option.lower().replace(' ', '_')}.jpg", "Download", original_shape=img.shape)
 
 def segmentation():
     st.subheader("Segmentation")
     saved_images = get_saved_images()
     img = load_selected_image(saved_images, key="segmentation_image")
+
     if img is not None:
-        show_image(img, "Original Image")
-        option = st.radio("Segmentation Method", ["Threshold", "Adaptive_Threshold", "Sobel Filter", "Canny Filter", "Watershed_Segmentation", "Kmeans_Segmentation"])
+        option = st.selectbox("Segmentation Method", [
+            "Threshold", "Adaptive_Threshold", "Sobel Filter", "Canny Filter",
+            "Watershed_Segmentation", "Kmeans_Segmentation"
+        ])
+
         if option == "Threshold":
             out = Segmentation.Thresholding(img)
         elif option == "Adaptive_Threshold":
@@ -98,12 +131,26 @@ def segmentation():
             out = Segmentation.Sobel(img)
         elif option == "Canny Filter":
             out = Segmentation.Canny(img)
-        if option == "Watershed_Segmentation":
+        elif option == "Watershed_Segmentation":
             out = Segmentation.Watershed_Segmentation(img)
-        if option == "Kmeans_Segmentation":
+        elif option == "Kmeans_Segmentation":
             out = Segmentation.Kmeans_Segmentation(img)
-        st.image(out, use_column_width=True)
-        create_download_button(out, f"{option.lower().replace(' ', '_')}.jpg", "Download")
+
+        # Resize output to match input
+        if out.shape[:2] != img.shape[:2]:
+            out = cv2.resize(out, (img.shape[1], img.shape[0]))
+
+        # Side-by-side display
+        col1, col2 = st.columns(2)
+        with col1:
+            st.image(img, channels='BGR', caption="Original Image")
+        with col2:
+            if len(out.shape) == 3:
+                st.image(out, channels='BGR', caption=f"Processed: {option}")
+            else:
+                st.image(out, caption=f"Processed: {option}")
+
+        create_download_button(out, f"{option.lower().replace(' ', '_')}.jpg", "Download", original_shape=img.shape)
 
 def feature_extraction():
     st.subheader("Feature Extraction")
@@ -116,7 +163,7 @@ def feature_extraction():
             st.write(f"Mean pixel value: {Features.Mean(img)}")
         elif option == "Standard Deviation":
             st.write(f"Standard deviation: {Features.Std_deviation(img)}")
-        elif option == "Text Extractor":
+        elif option == "Text Extractor":  
             extracted_text = Features.extract_text(img)
             st.text_area("Extracted Text", extracted_text, height=300)
 
