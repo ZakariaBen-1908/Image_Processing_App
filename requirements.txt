@@ -5,3 +5,4 @@ pillow
 pytesseract
 easyocr
 scikit-learn
+libtk8.6
