@@ -1,6 +1,6 @@
-streamlit
+streamlit==1.33.0
 opencv-python-headless==4.8.0.76
-numpy
-pillow
+numpy==1.24.4
+pillow==10.2.0
 pytesseract
 easyocr
