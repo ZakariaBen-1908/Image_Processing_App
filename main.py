@@ -3,6 +3,7 @@ import cv2
 import streamlit as st
 import numpy as np
 from PIL import Image
+import matplotlib.pyplot as plt
 import processing
 import Segmentation
 import Features
@@ -73,7 +74,7 @@ def Pre_Processing():
         option = st.selectbox("Choose technique", [
             "Convert to GreyScale", "Median Filtering", "Gaussian Filtering",
             "Resize", "Canny_edge_detection", "Thresholding",
-            "Adaptive_Thresholding", "Histogram_Equalization", "Sharpening"
+            "Adaptive_Thresholding", "Histogram_Equalization", "NLM Denoising", "Sharpening"
         ])
         
         if option == "Convert to GreyScale":
@@ -91,13 +92,27 @@ def Pre_Processing():
         elif option == "Adaptive_Thresholding":
             out = processing.Adaptive_Thresholding(img)
         elif option == "Histogram_Equalization":
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             out = processing.Histogram_Equalization(img)
+
+            # Plot histogram of original gray image
+            fig1, ax1 = plt.subplots()
+            ax1.hist(gray.ravel(), bins=256, range=[0, 256])
+            ax1.set_title("Histogram of Original Gray Image")
+
+            # Plot histogram of equalized image
+            equalized_gray = out
+            fig2, ax2 = plt.subplots()
+            ax2.hist(equalized_gray.ravel(), bins=256, range=[0, 256])
+            ax2.set_title("Histogram of Equalized Image")
+        elif option == "NLM Denoising":
+            out, diff = processing.NLM_Denoising(img)
+            original_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+            # Calculate the difference image
+            noise_removed = cv2.absdiff(original_gray, diff_gray)
         elif option == "Sharpening":
             out = processing.Sharpening(img)
-
-        # Resize output image to match input image
-        if out.shape[:2] != img.shape[:2]:
-            out = cv2.resize(out, (img.shape[1], img.shape[0]))
 
         # Display side-by-side
         col1, col2 = st.columns(2)
@@ -108,7 +123,19 @@ def Pre_Processing():
                 st.image(out, channels='BGR', caption=f"Processed: {option}")
             else:
                 st.image(out, caption=f"Processed: {option}")
-
+        # If NLM Denoising was selected, show the noise removed image
+        if option == "Histogram_Equalization":
+            col3, col4 = st.columns(2)
+            with col3:
+                st.pyplot(fig1)
+            with col4:
+                st.pyplot(fig2)
+        if option == "NLM Denoising":
+            col3, col4 = st.columns(2)
+            with col3:
+                st.image(diff, channels='BGR', caption="diff Image")
+            # with col4:
+            #     st.image(noise_removed, caption="Noise Removed (Difference Image)")
         # Download button
         create_download_button(out, f"{option.lower().replace(' ', '_')}.jpg", "Download", original_shape=img.shape)
 

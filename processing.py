@@ -3,7 +3,7 @@ import streamlit as st
 import numpy as np
 
 def Con_to_grey(img):
-    """Convert image to greyCon_to_grey."""
+    """Convert image to grey."""
     grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return grey
 
@@ -25,10 +25,36 @@ def Resize_Image(img):
     return cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
 
 def Histogram_Equalization(img):
-    """Apply histogram equalization (greyCon_to_grey only)."""
+    """Apply histogram equalization (grey only)."""
     grey = Con_to_grey(img)
     equalized = cv2.equalizeHist(grey)
     return equalized
+
+def NLM_Denoising(img, h=10, hColor=10, templateWindowSize=7, searchWindowSize=21):
+    """Apply Non-Local Means Denoising to a color image and compute the noise (difference) image."""
+
+    # Apply NLM denoising for color images
+    denoised = cv2.fastNlMeansDenoisingColored(
+        img, None,
+        h=h,
+        hColor=hColor,
+        templateWindowSize=templateWindowSize,
+        searchWindowSize=searchWindowSize
+    )
+
+    # Ensure same size and dtype before computing difference
+    if img.shape != denoised.shape:
+        denoised = cv2.resize(denoised, (img.shape[1], img.shape[0]))
+
+    # Compute the difference (noise removed)
+    diff = cv2.absdiff(img, denoised)
+
+    # Optionally exaggerate difference for visibility
+    diff = cv2.convertScaleAbs(diff, alpha=3)
+
+    # Convert BGR to RGB for Streamlit display
+    return cv2.cvtColor(denoised, cv2.COLOR_BGR2RGB), cv2.cvtColor(diff, cv2.COLOR_BGR2RGB)
+
 
 def Sharpening(img):
     """Apply sharpening using kernel filter."""
