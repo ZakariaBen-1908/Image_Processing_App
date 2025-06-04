@@ -31,29 +31,19 @@ def Histogram_Equalization(img):
     return equalized
 
 def NLM_Denoising(img, h=10, hColor=10, templateWindowSize=7, searchWindowSize=21):
-    """Apply Non-Local Means Denoising to a color image and compute the noise (difference) image."""
-
-    # Apply NLM denoising for color images
+    """Apply Non-Local Means Denoising and return denoised, noise, and difference images."""
     denoised = cv2.fastNlMeansDenoisingColored(
-        img, None,
-        h=h,
-        hColor=hColor,
-        templateWindowSize=templateWindowSize,
-        searchWindowSize=searchWindowSize
+        img, None, h, hColor, templateWindowSize, searchWindowSize
     )
+    # Convert to grayscale for diff computation (optional)
+    gray_original = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray_denoised = cv2.cvtColor(denoised, cv2.COLOR_BGR2GRAY)
 
-    # Ensure same size and dtype before computing difference
-    if img.shape != denoised.shape:
-        denoised = cv2.resize(denoised, (img.shape[1], img.shape[0]))
-
-    # Compute the difference (noise removed)
+    # Calculate difference
     diff = cv2.absdiff(img, denoised)
+    noise = cv2.absdiff(gray_original, gray_denoised)
 
-    # Optionally exaggerate difference for visibility
-    diff = cv2.convertScaleAbs(diff, alpha=3)
-
-    # Convert BGR to RGB for Streamlit display
-    return cv2.cvtColor(denoised, cv2.COLOR_BGR2RGB), cv2.cvtColor(diff, cv2.COLOR_BGR2RGB)
+    return denoised, noise, diff
 
 
 def Sharpening(img):

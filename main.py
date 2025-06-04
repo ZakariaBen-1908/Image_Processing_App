@@ -73,8 +73,7 @@ def Pre_Processing():
     if img is not None:
         option = st.selectbox("Choose technique", [
             "Convert to GreyScale", "Median Filtering", "Gaussian Filtering",
-            "Resize", "Canny_edge_detection", "Thresholding",
-            "Adaptive_Thresholding", "Histogram_Equalization", "NLM Denoising", "Sharpening"
+            "Resize", "Histogram_Equalization", "NLM Denoising", "Sharpening"
         ])
         
         if option == "Convert to GreyScale":
@@ -85,12 +84,6 @@ def Pre_Processing():
             out = processing.Gaussian_Filter(img)
         elif option == "Resize":
             out = processing.Resize_Image(img)
-        elif option == "Canny_edge_detection":
-            out = processing.Canny_edge_detection(img)
-        elif option == "Thresholding":
-            out = processing.Thresholding(img)
-        elif option == "Adaptive_Thresholding":
-            out = processing.Adaptive_Thresholding(img)
         elif option == "Histogram_Equalization":
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             out = processing.Histogram_Equalization(img)
@@ -106,7 +99,7 @@ def Pre_Processing():
             ax2.hist(equalized_gray.ravel(), bins=256, range=[0, 256])
             ax2.set_title("Histogram of Equalized Image")
         elif option == "NLM Denoising":
-            out, diff = processing.NLM_Denoising(img)
+            out, noise, diff = processing.NLM_Denoising(img)
             original_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
             # Calculate the difference image
@@ -133,9 +126,9 @@ def Pre_Processing():
         if option == "NLM Denoising":
             col3, col4 = st.columns(2)
             with col3:
-                st.image(diff, channels='BGR', caption="diff Image")
-            # with col4:
-            #     st.image(noise_removed, caption="Noise Removed (Difference Image)")
+                st.image(noise, caption="Noise Removed (Difference Image)")
+            with col4:
+                st.image(diff, channels='BGR', caption="diff Image"),
         # Download button
         create_download_button(out, f"{option.lower().replace(' ', '_')}.jpg", "Download", original_shape=img.shape)
 
